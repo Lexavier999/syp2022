@@ -21,16 +21,22 @@ x = player.xcor()
 y = player.ycor()
 
 floor = turtle.Turtle()
-floor.shape("arrow")
+floor.shape("square")
 floor.color("black")
 floor.penup()
 floor.goto(0,0)
 
-wall = turtle.Turtle()
-wall.shape("arrow")
-wall.color("red")
-wall.penup()
-wall.goto(0,0)
+leftwall = turtle.Turtle()
+leftwall.shape("square")
+leftwall.color("red")
+leftwall.penup()
+leftwall.goto(0,0)
+
+rightwall = turtle.Turtle()
+rightwall.shape("square")
+rightwall.color("yellow")
+rightwall.penup()
+rightwall.goto(0,0)
 
 inair = True
 Jumps = 0
@@ -45,43 +51,49 @@ def jump():
 def collision():
     global Jumps, y, x, inair, jumptiles, walltiles
     jdistances = []
-    wdistances = []
+    lwdistances = []
+    rwdistances = []
     validtiles = []
 
     y = player.ycor()
     x = player.xcor()
     for i in jumptiles:
         jdistances.append(player.distance(i))
+    for j in lwalltiles:
+        lwdistances.append(leftwall.distance(j))
+    for o in rwalltiles:
+        rwdistances.append(rightwall.distance(o))
 
     minjdisindex = jdistances.index(min(jdistances))
     minjtile = jumptiles[minjdisindex]
+    minlwdisindex = lwdistances.index(min(lwdistances))
+    minlwtile = lwalltiles[minlwdisindex]
+    minrwdisindex = rwdistances.index(min(rwdistances))
+    minrwtile = rwalltiles[minrwdisindex]
 
-    for j in walltiles:
-        temptile = j
-        if int(temptile.ycor()) > y - 40 or int(temptile.ycor()) < y + 40:
-            validtiles.append(j)
-
-    for o in validtiles:
-        wdistances.append(player.distance(o))
-
-    minwdisindex = wdistances.index(min(wdistances))
-    minwtile = walltiles[minwdisindex]
-
-    if player.xcor() < minwtile.xcor():
-        wall.goto(minwtile.xcor()-40,player.ycor())
-    if player.xcor() > minwtile.xcor():
-        wall.goto(minwtile.xcor()+40,player.ycor())
-
-    floor.goto(player.xcor(), (int(minjtile.ycor())+40))
+    if (int(minjtile.ycor())+40) < player.ycor():
+        floor.goto(player.xcor(), (int(minjtile.ycor())+40))
+    else:
+        floor.goto(player.xcor(), player.ycor()-40)
     if int(player.distance(minjtile)) < 94:
-        if y < int(floor.ycor()+40) and y > int(floor.ycor()+20):
+        if y < int(floor.ycor()+40) and y > int(floor.ycor()+15):
             player.yV = 0
             player.sety(int(floor.ycor())+40)
             Jumps = 0
         if y > int(floor.ycor()+40):
             inair == True
 
+    leftwall.goto(player.xcor() - 40, player.ycor())
 
+    if leftwall.distance(minlwtile) < 45:
+        player.xV = 0
+        player.setx(minlwtile.xcor() + 80)
+
+    rightwall.goto(player.xcor()+40, player.ycor())
+
+    if rightwall.distance(minrwtile) < 45:
+        player.xV = 0
+        player.setx(minrwtile.xcor() - 80)
 
 
 def leftmovement():
@@ -121,6 +133,7 @@ screen.onkeyrelease(leftstop, "a")
 screen.onkeyrelease(rightstop, "Right")
 screen.onkeyrelease(rightstop, "d")
 
+
 screen1 = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -131,12 +144,14 @@ screen1 = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1]]
 
 jumptiles = []
-walltiles = []
+lwalltiles = []
+rwalltiles = []
+tiles = []
 rendered = []
 def render(screen):
     rendererY = 480
@@ -154,7 +169,11 @@ def render(screen):
                 grass.shape("square")
                 grass.goto(rendererX,rendererY)
                 jumptiles.append(grass)
-                walltiles.append(grass)
+                lwalltiles.append(grass)
+                rwalltiles.append(grass)
+                tiles.append(grass)
+
+
 
 
 
@@ -164,6 +183,7 @@ def render(screen):
 
 
 render(screen1)
+
 
 #measuring sticks
 new = turtle.Turtle()
