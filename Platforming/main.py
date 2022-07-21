@@ -3,6 +3,7 @@ import time
 import random
 import math
 import itertools
+import wave
 
 screen = turtle.Screen()
 screen.tracer(0)
@@ -14,7 +15,7 @@ player.shape("square")
 player.color("pink")
 player.penup()
 player.turtlesize(4)
-player.goto(0,0)
+player.goto(-780,-410)
 player.yV = 0
 player.xV = 0
 x = player.xcor()
@@ -38,14 +39,18 @@ rightwall.color("yellow")
 rightwall.penup()
 rightwall.goto(0,0)
 
+player.spawnx = -780
+player.spawny = -410
+
 inair = True
 Jumps = 0
+cscreen = ""
 
 def jump():
     global Jumps, inair
     if Jumps < 2:
         inair = True
-        player.yV = +15
+        player.yV = +13
         Jumps+=1
 
 def collision():
@@ -105,17 +110,71 @@ def rightmovement():
 def rightstop():
     player.xV = 0
 
+def Rscreenswitch(screen):
+    global x, cscreen, tiles, y
+    x = player.xcor()
+    if screen == screen1:
+        if x > 960:
+            derender(tiles)
+            render(screen2)
+            cscreen = screen2
+            player.setx(-1*x+80)
+            x = player.xcor()
+            y = player.ycor()
+            player.spawnx = x
+            player.spawny = y
+
+
+
+def Lscreenswitch(screen):
+    global x, cscreen, tiles
+    x = player.xcor()
+    if screen == screen2:
+        if x < -960:
+            derender(tiles)
+            render(screen1)
+            cscreen = screen1
+            player.setx(-1*x-80)
+
+def die():
+    global deathtiles
+    for i in deathtiles:
+        if player.distance(i) < 38:
+            derender(tiles)
+            render(cscreen)
+            player.goto(player.spawnx,player.spawny)
+            player.xV = 0
+            player.yV = 0
+    diefall()
+
+def diefall():
+    if player.ycor() < -500:
+        player.xV = 0
+        player.yV = 0
+        player.goto(player.spawnx,player.spawny)
+
+def sawfall():
+    for i in failltiles:
+        if player.ycor() < i.ycor():
+            if i.xcor() - 20 < player.xcor() < i.xcor() + 20:
+                i.yV = -80
+        i.sety(i.ycor()+i.yV)
 
 
 
 def updategame():
-    global x, y, inair
+    global x, y, inair, cscreen
     x = player.xcor()
     y = player.ycor()
     player.setpos(x+player.xV,y+player.yV)
     if inair == True:
         player.yV-=1
     collision()
+    die()
+    sawfall()
+    Rscreenswitch(cscreen)
+    Lscreenswitch(cscreen)
+    print(player.pos())
     screen.update()
     screen.ontimer(updategame, 30)
 
@@ -143,22 +202,41 @@ screen1 = [
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1]]
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1],
+[2,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,2]]
+
+screen2 = [
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[1,0,0,0,0,0,1,2,2,3,3,3,0,0,0,0,0,0,0,0,0,0,0],
+[1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]
 
 jumptiles = []
 lwalltiles = []
 rwalltiles = []
 tiles = []
 rendered = []
+deathtiles = []
+failltiles = []
+
 def render(screen):
+    global cscreen
     rendererY = 480
-    rendererX = -960
+    rendererX = -963
+    cscreen = screen
     for i in screen:
         rendererY -= 80
-        rendererX = -960
+        rendererX = -963
         for j in i:
             rendererX += 80
             if j == 1:
@@ -172,20 +250,48 @@ def render(screen):
                 lwalltiles.append(grass)
                 rwalltiles.append(grass)
                 tiles.append(grass)
+            if j == 2:
+                dirt = turtle.Turtle()
+                dirt.penup()
+                dirt.color("brown")
+                dirt.turtlesize(4)
+                dirt.shape("square")
+                dirt.goto(rendererX, rendererY)
+                tiles.append(dirt)
+                lwalltiles.append(dirt)
+                rwalltiles.append(dirt)
+            if j == 3:
+                saw = turtle.Turtle()
+                saw.penup()
+                saw.color("grey")
+                saw.turtlesize(4)
+                saw.shape("square")
+                saw.goto(rendererX, rendererY)
+                tiles.append(saw)
+                deathtiles.append(saw)
+            if j == 4:
+                sawfall = turtle.Turtle()
+                sawfall.penup()
+                sawfall.color("grey")
+                sawfall.turtlesize(4)
+                sawfall.shape("square")
+                sawfall.goto(rendererX, rendererY)
+                sawfall.yV = 0
+                tiles.append(sawfall)
+                deathtiles.append(sawfall)
+                failltiles.append(sawfall)
 
-
-
-
-
-
-
-
+def derender(tlist):
+    for turtle in tlist:
+        turtle.reset()
+        turtle.penup()
+        turtle.goto(6942,6942)
 
 
 render(screen1)
 
-
-#measuring sticks
+"""
+measuring sticks
 new = turtle.Turtle()
 new.shape("square")
 new.color("black")
@@ -196,7 +302,7 @@ new2.shape("square")
 new2.color("red")
 new2.turtlesize(4)
 new2.goto(0,470)
-
+"""
 
 screen.listen()
 screen.mainloop()
